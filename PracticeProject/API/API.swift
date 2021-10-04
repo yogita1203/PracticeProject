@@ -7,6 +7,10 @@ import Foundation
 import UIKit
 import SwiftUI
 
+enum CustomError : Error{
+    
+}
+
 protocol API {
     init()
 
@@ -31,6 +35,8 @@ final class APIManager : API{
                 let sortedList = usersList.sorted(by: { $0.id > $1.id })
                 let filteredList = sortedList.filter({$0.id != Int(excludingUserWithID!)})
                 success(UsersList(filteredList))
+                
+                // failure case - TO DO 
             }.resume()
     
     

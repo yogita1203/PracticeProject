@@ -28,7 +28,8 @@ class UserListViewModel: ObservableObject {
                 self.loading = false
             }
             
-        }, failure: { FetchError in
+        }, failure: { error in
+            print("Error : \(error.localizedDescription)")
             
         })
             

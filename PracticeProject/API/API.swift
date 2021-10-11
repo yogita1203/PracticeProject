@@ -7,8 +7,24 @@ import Foundation
 import UIKit
 import SwiftUI
 
-enum CustomError : Error{
+enum CustomError {
+    case networkError(errorDescription : String)
+    case serverError(statusCode: Int)
+    case noData
+    case decodingError(errorDescription : String)
     
+    var localizedDescription: String {
+            switch self {
+            case .networkError(errorDescription : let msg):
+                return msg
+            case .serverError(statusCode: let statusCode):
+                return "Server error with Status code \(statusCode)"
+            case .noData:
+                return "Invalid Data"
+            case .decodingError(errorDescription : let msg):
+                return msg
+            }
+        }
 }
 
 protocol API {
@@ -28,15 +44,31 @@ final class APIManager : API{
     func fetchUsers(excludingUserWithID: String?, success: @escaping (UsersList) -> Void, failure: @escaping (FetchError) -> Void) {
         
             URLSession.shared.dataTask(with: URL(string: "https://jsonplaceholder.typicode.com/users")!) { data, response, error in
-                guard let data = data else {
+                if let error = error {
+                    failure(.networkError(errorDescription : error.localizedDescription))
                     return
                 }
-                let usersList = try! JSONDecoder.init().decode([User].self, from: data)
-                let sortedList = usersList.sorted(by: { $0.id > $1.id })
-                let filteredList = sortedList.filter({$0.id != Int(excludingUserWithID!)})
-                success(UsersList(filteredList))
                 
-                // failure case - TO DO 
+                if let response = response as? HTTPURLResponse, (response.statusCode != 200) {
+                    failure(.serverError(statusCode: response.statusCode))
+                    return
+                }
+                
+                guard let data = data else {
+                    failure(.noData)
+                    return
+                }
+                
+                do
+                {
+                    let usersList = try JSONDecoder.init().decode([User].self, from: data)
+                    let sortedFilteredList = usersList.filter({$0.id != Int(excludingUserWithID!)}).sorted(by: { $0.id > $1.id })
+                    success(UsersList(sortedFilteredList))
+                }
+                catch let error as NSError
+                {
+                    failure(.decodingError(errorDescription : error.localizedDescription))
+                }
             }.resume()
     
     
@@ -54,4 +86,4 @@ typealias UsersList = [User]
 // e.g. network timeout, badly formatted request or failing to decode/deserialize
 // a response could cause failure in a network request.
 //
-typealias FetchError = Any
+typealias FetchError = CustomError

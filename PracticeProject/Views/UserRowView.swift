@@ -9,7 +9,6 @@ import SwiftUI
 
 struct UserRowView: View {
     var user : User
-    @EnvironmentObject var userListViewModel : UserListViewModel
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -30,8 +29,6 @@ struct UserRowView: View {
                 .font(.body)
                 .fontWeight(.semibold)
             Spacer()
-        }.onTapGesture {
-            self.userListViewModel.selectedUser = user
         }
     }
 }

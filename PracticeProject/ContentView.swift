@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject var userListViewModel : UserListViewModel
+    @StateObject var userListViewModel = UserListViewModel()
 
     var body: some View {
         NavigationView{
@@ -17,9 +17,11 @@ struct ContentView: View {
                 {
                     SelectedUserView(user: self.userListViewModel.selectedUser!)
                 }
-                List(selection: self.$userListViewModel.selectedUser) { 
+                List() {
                     ForEach(Array(userListViewModel.users.enumerated()), id: \.element) { index, item in
-                                    UserRowView(user: item)
+                        UserRowView(user: item).onTapGesture {
+                            userListViewModel.selectedUser = item
+                        }
                     }
                 }
             }
@@ -32,6 +34,6 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView().environmentObject(UserListViewModel())
+        ContentView()
     }
 }

@@ -62,7 +62,15 @@ final class APIManager : API{
                 do
                 {
                     let usersList = try JSONDecoder.init().decode([User].self, from: data)
-                    let sortedFilteredList = usersList.filter({$0.id != Int(excludingUserWithID!)}).sorted(by: { $0.id > $1.id })
+//                    let sortedFilteredList = usersList.filter({$0.id != Int(excludingUserWithID!)}).sorted(by: { $0.id > $1.id })
+                    var sortedFilteredList : [User] = [User]()
+                    for index in stride(from: usersList.count, to: 0, by: -1)
+                    {
+                        if(usersList[index - 1].id !=  (Int(excludingUserWithID!)))
+                        {
+                            sortedFilteredList.append(usersList[index - 1])
+                        }
+                    }
                     success(UsersList(sortedFilteredList))
                 }
                 catch let error as NSError
